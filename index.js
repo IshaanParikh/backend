@@ -1,71 +1,87 @@
 const express = require('express');
 const app = express();
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
-// In-memory "database"
-let todos = [
-  { id: 1, text: 'Learn backend', done: false },
-  { id: 2, text: 'Play with Postman', done: false },
-  //Add more
-];
-
-// GET /todos - get all todos
-app.get('/todos', (req, res) => {
-  res.json(todos);
-});
-
-// POST /todos - create a new todo
-app.post('/todos', (req, res) => {
-  const { text } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: 'text is required' });
-  }
-
-  const newTodo = {
-    id: todos.length + 1,
-    text,
-    done: false,
-  };
-
-  todos.push(newTodo);
-  res.status(201).json(newTodo);
-});
-
-// PATCH /todos/:id - mark a todo as done
-app.patch('/todos/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const todo = todos.find((t) => t.id === id);
-
-  if (!todo) {
-    return res.status(404).json({ error: 'Todo not found' });
-  }
-
-  todo.done = true;
-  res.json(todo);
-});
-
-// DELETE /todos/:id - delete a todo
-app.delete('/todos/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const index = todos.findIndex((t) => t.id === id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: 'Todo not found' });
-  }
-
-  const deletedTodo = todos[index];
-  todos.splice(index, 1);
-
+app.get('/api/about', (req, res) => {
   res.json({
-    message: 'Todo deleted successfully',
-    todo: deletedTodo
+    name: "Ishaan Parikh",
+    major: "ECE",
+    year: "2029",
+    hometown: "Ahmedabad"
   });
 });
 
-// Start server
+let projects = [
+  {
+    id: 1,
+    title: "CEV projects",
+    description: "Created custom Simultaneous Localization and Mapping (SLAM) using IMU and 3D Lidar data input on ROS2.  Designed 2 custom Printed Circuit Boards (PCBs) on Altium Designer for strain gauge, and RPM sensor. Developed embedded control on RP2040 controller on car, utilizing UART for remote communication over WiFi.",
+    tech: ["SLAM", "ROS2/UART"]
+  },
+  {
+    id: 2,
+    title: "FPGA-Based 32-Bit RISC-V Processor ",
+    description: "Engineered pipelined Radix-4 Booth multiplier in Verilog RTL for a RISC-V 'M' extension, with 110 MHz Fmax.",
+    tech: ["RTL", "FPGA"]
+  },
+  {
+    id: 3,
+    title: "Personal Website",
+    description: "A responsive personal site showcasing projects and skills.",
+    tech: ["React", "CSS"]
+  }
+];
+
+app.get('/api/projects', (req, res) => {
+  res.json(projects);
+});
+
+
+app.post('/api/projects', (req, res) => {
+  const { title, description, tech } = req.body;
+
+  if (!title || !description || !tech) {
+    return res.status(400).json({ error: 'title, description, and tech are required' });
+  }
+
+  if (!Array.isArray(tech)) {
+    return res.status(400).json({ error: 'tech must be an array of strings' });
+  }
+
+  const newProject = {
+    id: projects[projects.length - 1].id + 1,
+    title,
+    description,
+    tech
+  };
+
+  projects.push(newProject);
+  res.status(201).json(newProject);
+});
+
+
+const funFacts = [
+  "I used to play soccer for my state in India.",
+  "I used to be ambidextrous",
+  "I was born in California, and my family used to live there, before moving back to India.",
+];
+
+app.get('/api/fun-fact', (req, res) => {
+  const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+  res.json({
+    fact: randomFact,
+    total_facts: funFacts.length
+  });
+});
+
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+  console.log(`Portfolio API running on http://localhost:${PORT}`);
+  console.log('');
+  console.log('Available endpoints:');
+  console.log('  GET  /api/about       – Info about me');
+  console.log('  GET  /api/projects    – My projects');
+  console.log('  POST /api/projects    – Add a project');
+  console.log('  GET  /api/fun-fact    – Random fun fact about me');
 });
